@@ -4,7 +4,7 @@
 		module="yoppworks-build"
 		revision="0.1.0-SNAPSHOT"
 		status="integration"
-		publication="20180202161010"
+		publication="20180205011848"
 		e:sbtVersion="1.0" e:scalaVersion="2.12"
 	>
 		<description>

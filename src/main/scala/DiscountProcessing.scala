@@ -1,6 +1,11 @@
+import org.slf4j.LoggerFactory
 import scala.util.control.Breaks._
 
 class DiscountProcessing {
+  val logger = LoggerFactory.getLogger(classOf[DiscountProcessing])
+  /*
+   * Checks if discount is applicable or not
+   */
   def check(discountId: Int, order: scala.collection.mutable.Map[Int, Int]): Boolean = {
     var check = false
     val dParam = DiscountInventory.getConditionParam(discountId)
@@ -17,6 +22,9 @@ class DiscountProcessing {
     check
   }
 
+  /*
+   * Calculates the discount amount for an/a order/cart
+   */
   def calculateDiscountValue(discountId: Int, order: scala.collection.mutable.Map[Int, Int]): Double = {
     val dType = DiscountInventory.getDiscountType(discountId)
     val dOn = DiscountInventory.getDiscountOnItem(discountId)
@@ -29,6 +37,9 @@ class DiscountProcessing {
     amount
   }
 
+  /*
+   * Method to traverse through all possible permutation to and calculates the maximum discount
+   */
   def getMaxDiscountCombination(discounts: List[Int], order: Map[Int, Int]): Double = {
     var maxDiscountAmount = 0.0
     for ( dPerm <- discounts.permutations) {
@@ -47,9 +58,13 @@ class DiscountProcessing {
         maxDiscountAmount = discountAmount
       }
     }
+    logger.info(s"Maximum Discount: ${maxDiscountAmount}")
     maxDiscountAmount
   }
 
+  /*
+   * Finds the frequency applicable discount on a specific order/cart
+   */
   def getNoOfDiscountPerItem(discountId: Int, order: Map[Int, Int]): List[Int] = {
     DiscountInventory.getDiscountType(discountId) match {
       case "%" =>
@@ -65,12 +80,22 @@ class DiscountProcessing {
     }
   }
 
-  def getApplicableDiscounts(order: Map[Int, Int]): Double = {
+  /*
+   * Finds the maximum discount using the following steps.
+   * 1) Filter out applicable discount coupons
+   * 2) Find the frequency of each coupon
+   * 3) Find maxDiscount from combination of discounts
+   */
+  def getApplicableDiscounts(order: Map[Int, Int], multipleFlag: Boolean = true): Double = {
     val tempOrder = scala.collection.mutable.Map() ++= order
     val discounts = DiscountInventory.getDiscountList.filter( d => check(d, tempOrder))
-    val applicableDiscounts = discounts.map( d => getNoOfDiscountPerItem(d, order)).foldRight(List[Int]())(_ ::: _)
-    println(applicableDiscounts)
-    getMaxDiscountCombination(applicableDiscounts, order)
+    if (multipleFlag) {
+      val applicableDiscounts = discounts.map( d => getNoOfDiscountPerItem(d, order)).foldRight(List[Int]())(_ ::: _)
+      logger.info(s"Applicable discount are: ${applicableDiscounts.mkString(", ")}")
+      getMaxDiscountCombination(applicableDiscounts, order)
+    } else {
+      getMaxDiscountCombination(discounts, order)
+    }
   }
 
 }

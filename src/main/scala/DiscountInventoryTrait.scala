@@ -1,3 +1,4 @@
+
 trait DiscountInventoryTrait {
 
   val DiscountLookUp: Map[Int, (String, List[(Int, Int)], List[(Int, Int)], Double)]
